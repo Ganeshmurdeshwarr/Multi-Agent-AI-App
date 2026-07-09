@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import cors from "cors"
 import { protect } from './middleware/auth.middleware.js';
 import { getCurrentUser } from './controller/user.controller.js';
+import { proxyWithHeader } from './utils/proxyWithHeader.js';
 
 dotenv.config();
 const port = process.env.PORT || 8000;
@@ -17,7 +18,8 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use("/api/auth", proxy(process.env.AUTH_SERVICE));
-app.use("/api/me", protect ,getCurrentUser);
+app.use("/api/chat", protect, proxyWithHeader(process.env.CHAT_SERVICE));
+app.use("/api/me", protect, getCurrentUser);
 
 app.use("/", (req, res) => {
   res.json({ message: `Gateway received request for ` });
