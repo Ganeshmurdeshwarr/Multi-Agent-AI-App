@@ -41,7 +41,7 @@ const messageSchema = new mongoose.Schema(
     },
 
     content: String,
-    // images: [String],
+    images: [String],
 
     // artifacts: [artifactSchema],
   },

@@ -29,7 +29,7 @@ const sessionId = crypto.randomUUID();
 
 await redis.set(`session-${sessionId}`,
    JSON.stringify({
-    userId:user._id,
+    _id:user._id,
     name:user.name,
     email:user.email,
     avatar:user.avatar
@@ -62,6 +62,7 @@ export const logout = async(req , res)=>{
     res.clearCookie("session")
     return res.status(200).json({success:true , message:"user logout successfully"})
    } catch (error) {
+     console.log(error)
      return res.status(500).json({
       message: error.message,
     });

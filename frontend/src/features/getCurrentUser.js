@@ -1,12 +1,10 @@
-import api from "../utils/axios"
+import api from "../utils/axios";
 
-export const getCurrentUser = async()=>{
-    try {
-        const {data} = await api.get("/api/me")
-        return data;
-    } catch (error) {
-        console.error("Error fetching current user:", error);
-       
-        return null
-    }
-}
+export const getCurrentUser = async () => {
+  try {
+    const { data } = await api.get("/api/me");
+    return data.user;
+  } catch (error) {
+    console.log(error);
+  }
+};

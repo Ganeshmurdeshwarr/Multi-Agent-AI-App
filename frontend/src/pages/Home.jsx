@@ -4,32 +4,34 @@ import api from "../utils/axios";
 import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup } from "firebase/auth";
 import { useDispatch, useSelector } from "react-redux";
+import Sidebar from "../components/Sidebar";
+import ChatArea from "../components/ChatArea";
+import ArtifactPanel from "../components/ArtifactPanel";
+import { setUserData } from "../redux/userSlice";
 
 const Home = () => {
   const { userData } = useSelector((state) => state.user);
   const dispatch = useDispatch();
-
   const handleLogin = async (token) => {
     try {
       const { data } = await api.post(`/api/auth/login`, { token });
-      dispatch(setUserData(data));
+      dispatch(setUserData(data.user));
     } catch (error) {
       console.log(error);
     }
   };
-
+  
   const handleGoogleLogin = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const token = await result.user.getIdToken();
     await handleLogin(token);
-    console.log(token);
   };
 
   return (
-    <div className="h-screen flex bg-[#0d0f14] text-white overflow-hidden">
-      {/* <Sidebar />
+    <div className="h-screen  flex bg-[#0d0f14] text-white overflow-hidden">
+      <Sidebar />
       <ChatArea />
-      <ArtifactPanel /> */}
+      <ArtifactPanel />
 
       {!userData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
