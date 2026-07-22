@@ -15,7 +15,7 @@ import {
 import React, { useState } from "react";
 import sendMessage from "../features/sendMessage";
 import { useDispatch, useSelector } from "react-redux";
-import { setMessages, addMessages } from "../redux/messageSlice";
+import { setMessages, addMessages, setArtifacts } from "../redux/messageSlice";
 import {
   addConversation,
   setSelectConversation,
@@ -60,13 +60,21 @@ const ChatInput = () => {
     const payload = {
       prompt,
       conversationId: conversation?._id,
-      agent:selectedAgent.toLowerCase()
+      agent: selectedAgent.toLowerCase(),
     };
 
     dispatch(addMessages({ role: "user", content: prompt }));
     setValue("");
     const data = await sendMessage(payload);
-    dispatch(addMessages({ role: "assistant", content: data?.answer ,images:data?.images }));
+     const latestArtifactsMessage =[...data].reverse().find(msg=>msg.artifacts && msg.artifacts.length > 0)
+    dispatch(setArtifacts(latestArtifactsMessage || []));
+    dispatch(
+      addMessages({
+        role: "assistant",
+        content: data?.answer,
+        images: data?.images,
+      }),
+    );
   };
 
   const agents = [

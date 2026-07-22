@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import Navbar from "./Navbar";
 import MessageList from "./MessageList";
 import { useDispatch, useSelector } from "react-redux";
-import { setMessages } from "../redux/messageSlice";
+import { setArtifacts, setMessages } from "../redux/messageSlice";
 import ChatInput from "./ChatInput";
 import getMessages from "../features/getMessages";
 
@@ -23,11 +23,12 @@ const ChatArea = () => {
         }
         const data = await getMessages(selectedConversation?._id);
         dispatch(setMessages(data));
+        const latestArtifactsMessage =[...data].reverse().find(msg=>msg.artifacts && msg.artifacts.length > 0)
+        dispatch(setArtifacts(latestArtifactsMessage || []))
       }
     };
     getMsg();
   }, [selectedConversation?._id]);
-  console.log("Selected Conversation:", selectedConversation);
   return (
     <div className="flex-1 flex flex-col min-w-0">
       <Navbar />

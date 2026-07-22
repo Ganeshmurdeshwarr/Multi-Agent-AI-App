@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const fileSchema = new mongoose.Schema(
   {
     name: String,
-
     content: String,
   },
   {
@@ -14,14 +13,9 @@ const fileSchema = new mongoose.Schema(
 const artifactSchema = new mongoose.Schema(
   {
     id: Number,
-
     type: String,
-
     title: String,
-
     files: [fileSchema],
-
-    createdAt: String,
   },
   {
     _id: false,
@@ -43,7 +37,7 @@ const messageSchema = new mongoose.Schema(
     content: String,
     images: [String],
 
-    // artifacts: [artifactSchema],
+    artifacts: [artifactSchema],
   },
   {
     timestamps: true,
