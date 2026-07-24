@@ -67,7 +67,7 @@ const ChatInput = () => {
     setValue("");
     const data = await sendMessage(payload);
      const latestArtifactsMessage =[...data].reverse().find(msg=>msg.artifacts && msg.artifacts.length > 0)
-    dispatch(setArtifacts(latestArtifactsMessage || []));
+    dispatch(setArtifacts(latestArtifactsMessage.artifacts || []));
     dispatch(
       addMessages({
         role: "assistant",

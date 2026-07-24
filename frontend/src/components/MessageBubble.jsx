@@ -2,7 +2,6 @@ import { Check, Copy, ExternalLink, X } from "lucide-react";
 import remarkGfm from "remark-gfm";
 import React, { useState } from "react";
 import Markdown from "react-markdown";
-// import SyntaxHighlighter from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 

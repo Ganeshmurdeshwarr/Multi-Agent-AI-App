@@ -24,7 +24,7 @@ const ChatArea = () => {
         const data = await getMessages(selectedConversation?._id);
         dispatch(setMessages(data));
         const latestArtifactsMessage =[...data].reverse().find(msg=>msg.artifacts && msg.artifacts.length > 0)
-        dispatch(setArtifacts(latestArtifactsMessage || []))
+        dispatch(setArtifacts(latestArtifactsMessage.artifacts || []))
       }
     };
     getMsg();

@@ -14,19 +14,19 @@ import Editor from "@monaco-editor/react";
 
 const ArtifactPanel = () => {
   const { artifacts } = useSelector((state) => state.message);
+  const artifact = artifacts[0]
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState("code");
   const [activeFile, setActiveFile] = useState(0);
-  const canPreview = Boolean(htmlFile);
   const [copied, setCopied] = useState(false);
-
-  if (artifacts.length == 0) return;
-
-  const file = artifacts[0]?.files[activeFile];
-
-  const htmlFile = artifacts?.files?.find((f) => f.name === "index.html");
-  const cssFile = artifacts?.files?.find((f) => f.name === "style.css");
-  const jsFile = artifacts?.files?.find((f) => f.name === "script.js");
+  if (artifact.length == 0) return null;
+  
+  const file = artifact?.files[activeFile];
+  
+  const htmlFile = artifact?.files?.find((f) => f.name === "index.html");
+  const canPreview = Boolean(htmlFile);
+  const cssFile = artifact?.files?.find((f) => f.name === "style.css");
+  const jsFile = artifact?.files?.find((f) => f.name === "script.js");
 
   const previewDoc = `<!DOCTYPE html>
 <html>
@@ -41,7 +41,7 @@ ${htmlFile?.content || ""}
 </body>
 </html>`;
 
-  export const detectLanguage = (fileName = "") => {
+const detectLanguage = (fileName = "") => {
     const name = fileName.toLowerCase();
 
     if (name.endsWith(".html")) return "html";
@@ -68,19 +68,21 @@ ${htmlFile?.content || ""}
 
     return "plaintext";
   };
-
   const handleCopy = async () => {
-    navigator.clipboard.writeText(file?.content || "");
+    if(!file) return;
+
+    await navigator.clipboard.writeText(file?.content || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+
   return (
-    <div
-      initial={{ width: 400 }}
-      animate={{ width: collapsed ? 48 : 400 }}
+    <motion.div
+      initial={{ width:400 }}
+      animate={{ width: collapsed ? 48 : 400  }}
       transition={{ duration: 0.25, ease: easeInOut }}
-      className="hidden lg:flex h-full border border-white/6 flex-col overflow-hidden shrink-0 w-[200px] "
+      className="hidden lg:flex h-full border border-white/6 flex-col overflow-hidden shrink-0  "
     >
       {!collapsed ? (
         <div className="flex flex-col h-full bg-[#0d0f14]">
@@ -98,7 +100,7 @@ ${htmlFile?.content || ""}
                 <Code2 className="text-indigo-400" size={12} />
               </div>
               <h2 className="text-[13px] font-medium text-slate-200 truncate">
-                {artifacts[0]?.title}
+                {artifact?.title}  
               </h2>
             </div>
 
@@ -141,17 +143,16 @@ ${htmlFile?.content || ""}
 
           {tab === "code" && (
             <div className="flex border-b  border-white/6 overflow-x-auto scrollbar-none [&::-webkit-scrollbar]:hidden shrink-0 h-auto">
-              {artifacts[0]?.files?.map((f, index) => (
+              {artifact?.files?.map((f, index) => (
                 <button
                   key={f.name}
                   onClick={() => setActiveFile(index)}
-                  className={`px-4 py-2.5 text-[11px] font-  medium whitespace-nowrap transition-colors duration-150 border-r border-white/5 relative cursor-pointer bg-transparent 
+                  className={`px-4 py-2.5 text-[11px] font-medium whitespace-nowrap transition-colors duration-150 border-r border-white/5 relative cursor-pointer bg-transparent 
                   ${activeFile === index ? "text-indigo-400" : "text-slate-500 hover:text-slate-300"}`}
                 >
                   {f.name}
                   {activeFile === index && (
                     <div
-                      layoutId="filetab"
                       className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-t-full"
                     />
                   )}
@@ -209,7 +210,7 @@ ${htmlFile?.content || ""}
           </div>
         </div>
       ) : (
-        <div className="hidden lg:flex  h-full boarder-1 border-white/6  bg-[#0d0f14] flex-col items-center py-4 gap-3 shrink-0 ">
+        <div className="hidden lg:flex  h-full border-1 border-white/6  bg-[#0d0f14] flex-col items-center py-4 gap-3 shrink-0 ">
           <button
             onClick={() => setCollapsed(false)}
             className="flex items-center justify-center w-7 h-7 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors duration-150 bg-transparent border-none cursor-pointer shrink-0"
@@ -225,12 +226,12 @@ ${htmlFile?.content || ""}
               }}
               className="text-[10px] font-medium text-slate-600 tracking-widest uppercase whitespace-nowrap "
             >
-              {artifacts[0]?.title}
+              {artifact?.title}
             </h2>
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
