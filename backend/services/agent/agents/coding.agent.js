@@ -23,10 +23,10 @@ ${state.prompt}
 
 `);
 
-const intent = intentRes.content;
+  const intent = intentRes.content.trim();
 
-if (intent === `CODE_GENERATION`) {
-const prompt = `You are PowerAI Coding Agent.
+  if (intent === `CODE_GENERATION`) {
+    const prompt = `You are PowerAI Coding Agent.
 
 Generate the requested project.
 
@@ -96,20 +96,36 @@ ${state.prompt}
 
 `;
 
-const res = await llm.invoke(prompt)
+    const res = await llm.invoke(prompt);
 
-const data = JSON.parse(res.content)
-return{
-  ...state,
-  aiResponse:"Code Generated Successfully",
-  artifacts:{
-    id:Date.now(),
-    type:"Project",
-    files:data.files || [],
-    title:state.prompt
-    
-  }
+    const raw = res.content.trim();
+
+    const cleaned = raw
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/, "")
+      .replace(/\s*```$/, "")
+      .trim();
+
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+
+    if (start === -1 || end === -1) {
+      throw new Error("Coding agent did not return JSON");
     }
+
+    const jsonString = cleaned.slice(start, end + 1);
+
+    const data = JSON.parse(jsonString);
+    return {
+      ...state,
+      aiResponse: "Code Generated Successfully",
+      artifacts:[ {
+        id: Date.now(),
+        type: "Project",
+        files: data.files || [],
+        title: state.prompt,
+      },]
+    };
   }
 
   const res = await llm.invoke(`
@@ -132,14 +148,13 @@ return{
 
   ${state.prompt}
 
-    `)
+    `);
 
-    const data = await res.content
+  const data = res.content;
 
-    return {
-      ...state,
-      aiResponse:data,
-      artifacts:[]
-    }
-
+  return {
+    ...state,
+    aiResponse: data,
+    artifacts: [],
+  };
 };

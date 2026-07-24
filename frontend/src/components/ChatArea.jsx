@@ -14,17 +14,25 @@ const ChatArea = () => {
     const getMsg = async () => {
       if (!selectedConversation) {
         dispatch(setMessages([]));
+         dispatch(setArtifacts([]))
         return;
       }
+
       if (selectedConversation) {
         if (selectedConversation.title == "New Chat") {
           dispatch(setMessages([])); 
+          dispatch(setArtifacts([]))
           return;
         }
+
+
         const data = await getMessages(selectedConversation?._id);
+
         dispatch(setMessages(data));
+
         const latestArtifactsMessage =[...data].reverse().find(msg=>msg.artifacts && msg.artifacts.length > 0)
-        dispatch(setArtifacts(latestArtifactsMessage.artifacts || []))
+        
+        dispatch(setArtifacts(latestArtifactsMessage?.artifacts || []))
       }
     };
     getMsg();

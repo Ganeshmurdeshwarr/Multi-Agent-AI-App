@@ -7,6 +7,9 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 
 
 const MessageBubble = ({ role, content, images }) => {
+  console.log("role",role)
+  console.log("content",content)
+  console.log("image",images)
   const [lightBox, setLightBox] = useState(null);
  const [copiedCode ,setCopiedCode] = useState("")
   const isUser = role === "user";
@@ -104,23 +107,24 @@ const MessageBubble = ({ role, content, images }) => {
         className="text-indigo-400 underline inline-flex items-center gap-1"
       >
         {children}
-        <ExternalLink size={11} />
+        <ExternalLink size={14} />
       </a>
     ),
 
-    // img: ({ src }) => {
-    //   if (!src) return null;
+    img: ({ src }) => {
 
-    //   return (
-    //     <img
-    //       src={src}
-    //       loading="lazy"
-    //       onClick={() => setLightBox(src)}
-    //       onError={(e) => e.currentTarget.remove()}
-    //       className="w-40 h-28 rounded-xl object-cover cursor-pointer"
-    //     />
-    //   );
-    // },
+      if (!src) return null;
+
+      return (
+        <img
+          src={src}
+          loading="lazy"
+          onClick={() => setLightBox(src)}
+          onError={(e) => e.currentTarget.remove()}
+          className="w-40 h-28 rounded-xl object-cover border-white/10 cursor-zoom-in hover:opacity-90 transition my-2"
+        />
+      );
+    },
 
     code({ className, children }) {
       const value = String(children)

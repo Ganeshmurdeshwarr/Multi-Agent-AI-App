@@ -27,6 +27,7 @@ import { createConversation } from "../features/createConversation";
 const ChatInput = () => {
   const { selectedConversation } = useSelector((state) => state.conversations);
   const { messages } = useSelector((state) => state.message);
+  console.log(messages)
   const [value, setValue] = useState("");
   const [isListening, setIsListening] = useState(false);
   const dispatch = useDispatch();
@@ -66,13 +67,17 @@ const ChatInput = () => {
     dispatch(addMessages({ role: "user", content: prompt }));
     setValue("");
     const data = await sendMessage(payload);
-     const latestArtifactsMessage =[...data].reverse().find(msg=>msg.artifacts && msg.artifacts.length > 0)
-    dispatch(setArtifacts(latestArtifactsMessage.artifacts || []));
+    if (!data) return;
+    if (data.artifacts?.length > 0) {
+  dispatch(setArtifacts(data.artifacts));
+}
+ 
     dispatch(
       addMessages({
         role: "assistant",
         content: data?.answer,
-        images: data?.images,
+        images: data?.images ||[],
+        artifacts: data.artifacts || [],
       }),
     );
   };

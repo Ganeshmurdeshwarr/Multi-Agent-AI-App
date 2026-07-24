@@ -3,7 +3,11 @@ import { getModel } from "../config/LLMModel.js";
 import { getMemory } from "../config/memory.js";
 
 export const chatAgent = async (state) => {
-  const llm = await getModel("chat");
+
+  try {
+
+
+     const llm = await getModel("chat");
 
   const history = await getMemory(state.conversationId);
 
@@ -53,4 +57,13 @@ messages.push(new HumanMessage(state.prompt))
     ...state,
     aiResponse: response.content,
   };
+    
+  } catch (error) {
+    return {
+    ...state,
+    aiResponse: "❌ Failed to generate Responser"
+  };
+  }
+
+ 
 };

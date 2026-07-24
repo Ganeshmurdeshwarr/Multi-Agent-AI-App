@@ -11,18 +11,31 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence, easeIn, easeInOut } from "framer-motion";
 import Editor from "@monaco-editor/react";
+import { useEffect } from "react";
 
 const ArtifactPanel = () => {
   const { artifacts } = useSelector((state) => state.message);
-  const artifact = artifacts[0]
-  const [collapsed, setCollapsed] = useState(false);
+  const artifact = artifacts?.[0];
+  const [collapsed, setCollapsed] = useState(true);
   const [tab, setTab] = useState("code");
   const [activeFile, setActiveFile] = useState(0);
   const [copied, setCopied] = useState(false);
-  if (artifact.length == 0) return null;
-  
+
+  // if (!artifact) return null;
+  useEffect(() => {
+    if (artifact) {
+      setCollapsed(false);
+      setActiveFile(0);
+      setTab("code");
+    } else {
+      setCollapsed(true);
+      setActiveFile(0);
+      setTab("code");
+    }
+  }, [artifact?.id]);
+
   const file = artifact?.files[activeFile];
-  
+
   const htmlFile = artifact?.files?.find((f) => f.name === "index.html");
   const canPreview = Boolean(htmlFile);
   const cssFile = artifact?.files?.find((f) => f.name === "style.css");
@@ -41,7 +54,7 @@ ${htmlFile?.content || ""}
 </body>
 </html>`;
 
-const detectLanguage = (fileName = "") => {
+  const detectLanguage = (fileName = "") => {
     const name = fileName.toLowerCase();
 
     if (name.endsWith(".html")) return "html";
@@ -69,18 +82,17 @@ const detectLanguage = (fileName = "") => {
     return "plaintext";
   };
   const handleCopy = async () => {
-    if(!file) return;
+    if (!file) return;
 
     await navigator.clipboard.writeText(file?.content || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-
   return (
     <motion.div
-      initial={{ width:400 }}
-      animate={{ width: collapsed ? 48 : 400  }}
+      initial={{ width: 400 }}
+      animate={{ width: collapsed ? 48 : 400 }}
       transition={{ duration: 0.25, ease: easeInOut }}
       className="hidden lg:flex h-full border border-white/6 flex-col overflow-hidden shrink-0  "
     >
@@ -100,7 +112,7 @@ const detectLanguage = (fileName = "") => {
                 <Code2 className="text-indigo-400" size={12} />
               </div>
               <h2 className="text-[13px] font-medium text-slate-200 truncate">
-                {artifact?.title}  
+                {artifact?.title}
               </h2>
             </div>
 
@@ -152,9 +164,7 @@ const detectLanguage = (fileName = "") => {
                 >
                   {f.name}
                   {activeFile === index && (
-                    <div
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-t-full"
-                    />
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500 rounded-t-full" />
                   )}
                 </button>
               ))}
