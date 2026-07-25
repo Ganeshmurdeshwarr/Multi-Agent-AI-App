@@ -1,3 +1,64 @@
-export const pdfAgent = async()=>{
-    
+import {getModel} from "../config/LLMModel.js"
+import { generatePdf } from "../utils/generatePdf.js"
+import { getFormS3 } from "../utils/getFormS3.js"
+import { uploadS3 } from "../utils/uploadToS3.js"
+
+export const pdfAgent = async(state)=>{
+    try {
+        const llm = await getModel("pdf")
+        const prompt =`
+        Your are an expert document writer.
+
+        Return ONLY valid JSON.
+
+        Do NOT return markdown.
+
+        Do NOT return explanation.
+
+        Structure:
+
+        {
+        "title":"",
+        "subtitle":"",
+        "section":[
+        {
+        "heading":"",
+        "points":[]
+        }
+        ]
+        }
+
+        Generate 4-8 sections.
+
+        Each section should have 3-6 concise bullet points
+
+        Topic: 
+        ${state.prompt}`
+
+        const res = await llm.invoke(prompt)
+        const data =  JSON.parse(res.content)
+        const pdfBuffer = await generatePdf(data)
+        const filename = `pdf-${Date.now()}.pdf`
+        await uploadS3(filename , pdfBuffer , "application/pdf")
+
+        const downloadUrl = await getFormS3(filename , 10*60 )
+
+        return {
+            ...state,
+            aiResponse:`# PDF Generated
+            
+**${data.title}**
+
+📩 [Download PDF](${downloadUrl})
+
+_Link expires in 10 minutes._`
+
+}
+    } catch (error) {
+        console.log(error)
+        return{
+            ...state,
+            aiResponse:"❌ Failed to Generate PDF..."
+        }
+    }
 }
