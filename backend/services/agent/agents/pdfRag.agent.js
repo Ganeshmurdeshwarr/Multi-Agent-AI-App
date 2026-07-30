@@ -5,9 +5,12 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { vectorStore } from "../config/vectorDB.js";
 import { getModel } from "../config/LLMModel.js";
 import { deductCredits } from "../utils/deductCredits.js";
+import { checkAgentLimit } from "../config/agentLimit.js";
 
 export const pdfRag = async (state) => {
   try {
+       await checkAgentLimit(state.userId ,"pdfRag")
+    
     const buffer = fs.readFileSync(state.file.path);
 
     const pdf = new PDFParse({ data: buffer });
@@ -58,12 +61,11 @@ Question:${state.prompt}
       ...state,
       aiResponse: response.content,
     };
-  } catch (err) {
-    console.log(err)
-      console.log(err.message);
+  } catch (error) {
+    console.log(error)
        return {
       ...state,
-      aiResponse: "❌ Failed to analyze PDF",
+      aiResponse: error?.data?.message || "❌ Failed to Analyze PDF",
     };
   }finally {
       fs.unlinkSync(state.file.path);

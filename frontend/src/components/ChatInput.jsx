@@ -27,7 +27,7 @@ import { createConversation } from "../features/createConversation";
 
 const ChatInput = () => {
   const { selectedConversation } = useSelector((state) => state.conversations);
-  const { messages } = useSelector((state) => state.message);
+  const { messages , isLoading} = useSelector((state) => state.message);
   console.log(messages);
   const [value, setValue] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -254,11 +254,11 @@ const ChatInput = () => {
           {/* Right — send / stop */}
           <button
             onClick={handleSendMessage}
-            disabled={!value}
+            disabled={!value.trim() || isLoading}
             className={`flex items-center justify-center w-8 h-8 rounded-lg border-none cursor-pointer transition-all duration-150
               ${
-                // isLoading
-                //   ? "bg-white text-[#0d0f14] hover:bg-slate-200":
+                isLoading
+                  ? "bg-white text-[#0d0f14] hover:bg-slate-200":
                 value.trim()
                   ? "bg-linear-to-br from-indigo-500 to-violet-700 hover:opacity-90 text-white"
                   : "bg-white/5 text-slate-600 cursor-not-allowed"

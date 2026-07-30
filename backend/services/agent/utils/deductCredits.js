@@ -5,7 +5,6 @@ export const deductCredits = async(userId ,agent)=>{
         const {data} =  await axios.post(`${process.env.Auth_SERVICE}/deduct-credits`,{userId , agent});
         return data
     } catch (error) {
-        console.log(error)
         return null 
     }
 }

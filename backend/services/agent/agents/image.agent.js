@@ -3,11 +3,13 @@ import { uploadS3 } from "../utils/uploadToS3.js";
 import { getModel } from "../config/LLMModel.js";
 import { getFormS3 } from "../utils/getFormS3.js";
 import { deductCredits } from "../utils/deductCredits.js";
+import { checkAgentLimit } from "../config/agentLimit.js";
 
 export const imageAgent = async (state) => {
 
 
     try {
+   await checkAgentLimit(state.userId ,"image")
 
         
   const llm = await getModel("image");
@@ -60,10 +62,10 @@ ${state.prompt}
         
     } catch (error) {
         console.log(error)
-        return{
-            ...state,
-            aiResponse:"❌ Failed to generate image"
-        }
+        return {
+      ...state,
+      aiResponse: error?.data?.message || "❌ Failed to generate image",
+    };
     }
 
 };

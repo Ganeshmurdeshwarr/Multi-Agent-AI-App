@@ -1,23 +1,28 @@
-import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
 import { getModel } from "../config/LLMModel.js";
 import { getMemory } from "../config/memory.js";
 import { deductCredits } from "../utils/deductCredits.js";
+import { checkAgentLimit } from "../config/agentLimit.js";
 
 export const chatAgent = async (state) => {
   try {
-    
+    await checkAgentLimit(state.userId, "chat");
 
-     const llm = await getModel("chat");
+    const llm = await getModel("chat");
 
-  const history = await getMemory(state.conversationId);
+    const history = await getMemory(state.conversationId);
 
-  const searchContext =state.searchResults ? `Web Search Results:
+    const searchContext = state.searchResults
+      ? `Web Search Results:
   ${JSON.stringify(state.searchResults)}
-  Answer the user using only the above search results` :""
+  Answer the user using only the above search results`
+      : "";
 
-
-
-  const systemPrompt = `
+    const systemPrompt = `
     You are PowerAI, an intelligent AI assistant. 
 
     ${searchContext}
@@ -43,29 +48,26 @@ Formatting:
 - Never write headings and content on the same line.
 - Never generate large walls of text.
 `;
-  const messages = [new SystemMessage(systemPrompt)];
-  history.forEach((msg) => {
-    if (msg.role == "user") {
-      messages.push(new HumanMessage(msg.content));
-    } else {
-      messages.push(new AIMessage(msg.content));
-    }
-  });
-messages.push(new HumanMessage(state.prompt))
-  const response = await llm.invoke(messages);
-    await deductCredits(state.userId, "chat")
+    const messages = [new SystemMessage(systemPrompt)];
+    history.forEach((msg) => {
+      if (msg.role == "user") {
+        messages.push(new HumanMessage(msg.content));
+      } else {
+        messages.push(new AIMessage(msg.content));
+      }
+    });
+    messages.push(new HumanMessage(state.prompt));
+    const response = await llm.invoke(messages);
+    await deductCredits(state.userId, "chat");
 
-  return {
-    ...state,
-    aiResponse: response.content,
-  };
-    
+    return {
+      ...state,
+      aiResponse: response.content,
+    };
   } catch (error) {
     return {
-    ...state,
-    aiResponse: "❌ Failed to generate Responser"
-  };
+      ...state,
+      aiResponse: error?.data?.message || "❌ Failed to generate chat",
+    };
   }
-
- 
 };

@@ -3,12 +3,14 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 // import { checkAgentLimit } from "../config/agentRateLimit.js";
 import { deductCredits } from "../utils/deductCredits.js";
 import { getModel } from "../config/LLMModel.js";
+import { checkAgentLimit } from "../config/agentLimit.js";
 
 
 export const imageAnalyzer= async(state)=>{
 
   try {
 
+   await checkAgentLimit(state.userId ,"imageAnalyzer")
 
 
     const llm =await getModel("imageAnalyzer");
@@ -62,12 +64,11 @@ Rules:
         response.content
     };
 
-  }catch(err){
-    console.log(err.message);
-    console.log(err)
+  }catch(error){
+ 
     return {
       ...state,
-      aiResponse:"❌ Failed to analyze file"
+      aiResponse: error?.data?.message || "❌ Failed to Analyze image",
     };
 
 }finally {

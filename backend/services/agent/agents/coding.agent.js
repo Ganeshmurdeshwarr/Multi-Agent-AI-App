@@ -1,10 +1,14 @@
+import { checkAgentLimit } from "../config/agentLimit.js";
 import { getModel } from "../config/LLMModel.js";
 import { deductCredits } from "../utils/deductCredits.js";
 
 export const codingAgent = async (state) => {
-  const intentLLM = await getModel("intent");
-  const llm = await getModel("coding");
-  const intentRes = await intentLLM.invoke(`
+  try {
+    await checkAgentLimit(state.userId, "coding");
+
+    const intentLLM = await getModel("intent");
+    const llm = await getModel("coding");
+    const intentRes = await intentLLM.invoke(`
 
 You are an intent classifier.
 
@@ -24,10 +28,10 @@ ${state.prompt}
 
 `);
 
-  const intent = intentRes.content.trim();
+    const intent = intentRes.content.trim();
 
-  if (intent === `CODE_GENERATION`) {
-    const prompt = `You are PowerAI Coding Agent.
+    if (intent === `CODE_GENERATION`) {
+      const prompt = `You are PowerAI Coding Agent.
 
 Generate the requested project.
 
@@ -97,43 +101,44 @@ ${state.prompt}
 
 `;
 
-    const res = await llm.invoke(prompt);
+await deductCredits(state.userId, "coding");
+      const res = await llm.invoke(prompt);
 
-    const raw = res.content.trim();
+      const raw = res.content.trim();
 
-    const cleaned = raw
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/, "")
-      .replace(/\s*```$/, "")
-      .trim();
+      const cleaned = raw
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/, "")
+        .replace(/\s*```$/, "")
+        .trim();
 
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
+      const start = cleaned.indexOf("{");
+      const end = cleaned.lastIndexOf("}");
 
-    if (start === -1 || end === -1) {
-      throw new Error("Coding agent did not return JSON");
+      if (start === -1 || end === -1) {
+        throw new Error("Coding agent did not return JSON");
+      }
+
+      const jsonString = cleaned.slice(start, end + 1);
+
+      const data = JSON.parse(jsonString);
+
+
+      return {
+        ...state,
+        aiResponse: "Code Generated Successfully",
+        artifacts: [
+          {
+            id: Date.now(),
+            type: "Project",
+            files: data.files || [],
+            title: state.prompt,
+          },
+        ],
+      };
     }
 
-    const jsonString = cleaned.slice(start, end + 1);
-
-    const data = JSON.parse(jsonString);
-
-        await deductCredits(state.userId, "coding")
-
-
-    return {
-      ...state,
-      aiResponse: "Code Generated Successfully",
-      artifacts:[ {
-        id: Date.now(),
-        type: "Project",
-        files: data.files || [],
-        title: state.prompt,
-      },]
-    };
-  }
-
-  const res = await llm.invoke(`
+    const res = await llm.invoke(`
   The user's request is:
 
   ${intent}
@@ -155,12 +160,19 @@ ${state.prompt}
 
     `);
 
-  const data = res.content;
-    await deductCredits(state.userId, "coding")
+    const data = res.content;
+    await deductCredits(state.userId, "coding");
 
-  return {
-    ...state,
-    aiResponse: data,
-    artifacts: [],
-  };
+    return {
+      ...state,
+      aiResponse: data,
+      artifacts: [],
+    };
+  } catch (error) {
+    return {
+      ...state,
+      aiResponse: error?.data?.message || "❌ Failed to generate code",
+      artifacts: [],
+    };
+  }
 };

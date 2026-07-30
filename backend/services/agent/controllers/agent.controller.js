@@ -47,7 +47,6 @@ export const agent = async (req, res) => {
       artifacts:result?.artifacts
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ message: `agent error:${error}` });
+    next(error)
   }
 };
