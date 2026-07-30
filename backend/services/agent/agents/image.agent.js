@@ -2,6 +2,7 @@ import axios from "axios";
 import { uploadS3 } from "../utils/uploadToS3.js";
 import { getModel } from "../config/LLMModel.js";
 import { getFormS3 } from "../utils/getFormS3.js";
+import { deductCredits } from "../utils/deductCredits.js";
 
 export const imageAgent = async (state) => {
 
@@ -44,6 +45,9 @@ ${state.prompt}
   const filename = `image${Date.now()}.png`;
   await uploadS3(filename, buffer, "image/png");
   const downloadUrl = await getFormS3(filename, 10*60);
+
+      await deductCredits(state.userId, "image")
+
   return {
     ...state,
     aiResponse:`![Generated Image](${downloadUrl})

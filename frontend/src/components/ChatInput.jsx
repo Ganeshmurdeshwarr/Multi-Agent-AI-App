@@ -10,12 +10,13 @@ import {
   Presentation,
   Send,
   Square,
+  X,
   Zap,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import sendMessage from "../features/sendMessage";
 import { useDispatch, useSelector } from "react-redux";
-import { setMessages, addMessages, setArtifacts } from "../redux/messageSlice";
+import { setMessages, addMessages, setArtifacts, setIsLoading } from "../redux/messageSlice";
 import {
   addConversation,
   setSelectConversation,
@@ -27,13 +28,16 @@ import { createConversation } from "../features/createConversation";
 const ChatInput = () => {
   const { selectedConversation } = useSelector((state) => state.conversations);
   const { messages } = useSelector((state) => state.message);
-  console.log(messages)
+  console.log(messages);
   const [value, setValue] = useState("");
   const [isListening, setIsListening] = useState(false);
   const dispatch = useDispatch();
   const [selectedAgent, setSelectedAgent] = useState("Auto");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileRef = useRef(null);
 
   const handleSendMessage = async () => {
+    dispatch(setIsLoading(true))
     const prompt = value.trim();
 
     if (!prompt) return;
@@ -58,25 +62,30 @@ const ChatInput = () => {
       );
     }
 
-    const payload = {
-      prompt,
-      conversationId: conversation?._id,
-      agent: selectedAgent.toLowerCase(),
-    };
+    const formData = new FormData();
+    formData.append("prompt", value.trim());
+    formData.append("conversationId", conversation?._id);
+    formData.append("agent", selectedAgent.toLowerCase());
+    if(selectedFile){
+      formData.append("file", selectedFile);
+    }
 
     dispatch(addMessages({ role: "user", content: prompt }));
     setValue("");
-    const data = await sendMessage(payload);
+    const data = await sendMessage(formData);
+    dispatch(setIsLoading(false))
+
+    setSelectedFile(null)
     if (!data) return;
     if (data.artifacts?.length > 0) {
-  dispatch(setArtifacts(data.artifacts));
-}
- 
+      dispatch(setArtifacts(data.artifacts));
+    }
+
     dispatch(
       addMessages({
         role: "assistant",
         content: data?.answer,
-        images: data?.images ||[],
+        images: data?.images || [],
         artifacts: data.artifacts || [],
       }),
     );
@@ -158,6 +167,42 @@ const ChatInput = () => {
             );
           })}
         </div>
+
+        {selectedFile && (
+          <div className="my-3">
+            <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/4 px-3 py-2 ">
+              {selectedFile.type === "application/pdf" ? (
+                <FileText size={16} className="text-red-400" />
+              ) : (
+                selectedFile.type.startsWith("image/") && (
+                  <img
+                    src={URL.createObjectURL(selectedFile)}
+                    className="h-10 w-10 rounded-xl object-cover mt-3"
+                  />
+                )
+              )}
+
+
+            <div className="">
+              <p className="text-xs text-white">{selectedFile?.name}</p>
+              <p className="text-[10px] text-slate-500">
+                {Math.ceil(selectedFile.size)}KB
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedFile(null);
+                fileRef.current.value = "";
+              }}
+              className="ml-2"
+            >
+              <X className="text-slate-500 hover:text-white" size={14} />
+            </button>
+            </div>
+
+          </div>
+        )}
+
         <textarea
           value={value}
           onChange={(e) => setValue(e.target.value)}
@@ -169,8 +214,9 @@ const ChatInput = () => {
 
         <div className="flex items-center justify-between">
           {/* Left — attach + mic */}
+
           <div className="flex items-center gap-1">
-            {/* <input
+            <input
               ref={fileRef}
               type="file"
               hidden
@@ -182,10 +228,13 @@ const ChatInput = () => {
                   setSelectedFile(file);
                 }
               }}
-            /> */}
+            />
+
             <button
               className="flex items-center justify-center w-8 h-8 rounded-lg text-slate-600 hover:text-slate-400 hover:bg-white/5 border border-transparent hover:border-white/6 transition-all duration-150 bg-transparent cursor-pointer"
-              // onClick={() => fileRef.current.click()}
+              onClick={(e) => {
+                fileRef.current.click();
+              }}
             >
               <Paperclip size={16} />
             </button>
@@ -198,7 +247,7 @@ const ChatInput = () => {
                   : "text-slate-600 hover:bg-white/5"
               }`}
             >
-              {/* {isListening ? <MicOff size={16} /> : <Mic size={16} />} */}
+              {isListening ? <MicOff size={16} /> : <Mic size={16} />}
             </button>
           </div>
 

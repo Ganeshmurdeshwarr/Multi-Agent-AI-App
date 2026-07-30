@@ -1,11 +1,11 @@
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getModel } from "../config/LLMModel.js";
 import { getMemory } from "../config/memory.js";
+import { deductCredits } from "../utils/deductCredits.js";
 
 export const chatAgent = async (state) => {
-
   try {
-
+    
 
      const llm = await getModel("chat");
 
@@ -53,6 +53,8 @@ Formatting:
   });
 messages.push(new HumanMessage(state.prompt))
   const response = await llm.invoke(messages);
+    await deductCredits(state.userId, "chat")
+
   return {
     ...state,
     aiResponse: response.content,

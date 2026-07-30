@@ -1,4 +1,5 @@
 import { getModel } from "../config/LLMModel.js";
+import { deductCredits } from "../utils/deductCredits.js";
 
 export const codingAgent = async (state) => {
   const intentLLM = await getModel("intent");
@@ -116,6 +117,10 @@ ${state.prompt}
     const jsonString = cleaned.slice(start, end + 1);
 
     const data = JSON.parse(jsonString);
+
+        await deductCredits(state.userId, "coding")
+
+
     return {
       ...state,
       aiResponse: "Code Generated Successfully",
@@ -151,6 +156,7 @@ ${state.prompt}
     `);
 
   const data = res.content;
+    await deductCredits(state.userId, "coding")
 
   return {
     ...state,

@@ -1,4 +1,5 @@
 import { getModel } from "../config/LLMModel.js";
+import { deductCredits } from "../utils/deductCredits.js";
 import { generatePpt } from "../utils/generatePPT.js";
 import { getFormS3 } from "../utils/getFormS3.js";
 import { uploadS3 } from "../utils/uploadToS3.js";
@@ -60,6 +61,7 @@ export const pptAgent = async (state) => {
       "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     );
     const downloadUrl = await getFormS3(filename, 24 * 60);
+    await deductCredits(state.userId, "ppt")
 
     return {
       ...state,

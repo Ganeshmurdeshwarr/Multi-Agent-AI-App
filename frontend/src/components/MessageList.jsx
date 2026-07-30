@@ -1,13 +1,27 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import MessageBubble from "./MessageBubble";
-import { motion } from "motion/react"
+import { motion } from "motion/react";
+import LoadingAnimation from "./LoadingAnimation";
 
 const MessageList = () => {
   const { selectedConversation } = useSelector((state) => state.conversations);
-  const { messages } = useSelector((state) => state.message);
+  const { messages, isLoading } = useSelector((state) => state.message);
+  const bottomRef=useRef(null)
+
+  useEffect(()=>{
+
+    requestAnimationFrame(()=>{
+      bottomRef?.current.scrollIntoView({
+        behavior:"smooth",
+        block:"end"
+      })
+    })
+
+  },[messages.length,isLoading])
+
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
       {messages.length == 0 || !selectedConversation ? (
         <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
           <div className="flex flex-col gap-1.5">
@@ -54,17 +68,11 @@ const MessageList = () => {
             </motion.div>
           ))}
 
-          {/* {isLoading && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
-              <GeneratingIndicator />
-            </motion.div>
-          )} */}
+          {isLoading && <LoadingAnimation />}
         </div>
       )}
+
+     <div ref={bottomRef}/> 
     </div>
   );
 };
