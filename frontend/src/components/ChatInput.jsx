@@ -13,7 +13,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import sendMessage from "../features/sendMessage";
 import { useDispatch, useSelector } from "react-redux";
 import { setMessages, addMessages, setArtifacts, setIsLoading } from "../redux/messageSlice";
@@ -28,13 +28,14 @@ import { createConversation } from "../features/createConversation";
 const ChatInput = () => {
   const { selectedConversation } = useSelector((state) => state.conversations);
   const { messages , isLoading} = useSelector((state) => state.message);
-  console.log(messages);
   const [value, setValue] = useState("");
   const [isListening, setIsListening] = useState(false);
   const dispatch = useDispatch();
   const [selectedAgent, setSelectedAgent] = useState("Auto");
   const [selectedFile, setSelectedFile] = useState(null);
   const fileRef = useRef(null);
+const recognitionRef= useRef()
+
 
   const handleSendMessage = async () => {
     dispatch(setIsLoading(true))
@@ -42,7 +43,7 @@ const ChatInput = () => {
 
     if (!prompt) return;
     let conversation = selectedConversation;
-    if (!conversation) {
+    if (!conversation){
       const newConversation = await createConversation();
       dispatch(setSelectConversation(newConversation));
       dispatch(addConversation(newConversation));
@@ -89,7 +90,60 @@ const ChatInput = () => {
         artifacts: data.artifacts || [],
       }),
     );
-  };
+  
+  }
+
+useEffect(()=>{
+const SpeechRecognition = window.speechRecognition || window.webkitSpeechRecognition
+
+if(!SpeechRecognition) return;
+
+ const recognition = new SpeechRecognition()
+
+ recognition.lang="en-US";
+ recognition.interimResults =true;
+ recognition.continuous  =true;
+
+ recognition.onresult=(event)=>{
+let transcript = ""
+
+for(let i=event.resultIndex ; i < event.results.length ; i++){
+
+  transcript +=event.results[i][0].transcript
+
+}
+setValue(transcript)
+ }
+
+ recognition.onend=()=>{
+  setIsListening(false)
+ }
+
+ recognitionRef.current= recognition
+
+},[])
+
+
+const toggleMic =()=>{
+  if(!recognitionRef.current){
+    alert("speech recognition not supported")
+    return
+  }
+
+
+    if(isListening){
+      recognitionRef.current.stop()
+      setIsListening(false)
+    }else{
+      recognitionRef.current.start()
+      setIsListening(true)
+    }
+  }
+
+
+
+
+
 
   const agents = [
     {
@@ -240,14 +294,14 @@ const ChatInput = () => {
             </button>
 
             <button
-              // onClick={toggleMic}
+              onClick={toggleMic}
               className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all cursor-pointer ${
                 isListening
                   ? "bg-red-500 text-white"
                   : "text-slate-600 hover:bg-white/5"
               }`}
             >
-              {isListening ? <MicOff size={16} /> : <Mic size={16} />}
+              {isListening ? <MicOff size={16} />:<Mic size={16} />}
             </button>
           </div>
 
