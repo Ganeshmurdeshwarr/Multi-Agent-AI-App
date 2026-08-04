@@ -30,7 +30,7 @@ console.log("BILLING_SERVICE:", process.env.BILLING_SERVICE);
 app.use("/api/me", protect, getCurrentUser);
 
 app.use("/", (req, res) => {
-  res.json({ message: `Gateway received request for ` });
+  res.json({ message: `Gateway received request for ALL IS WELL` });
 });
 
 app.listen(port, () => {
