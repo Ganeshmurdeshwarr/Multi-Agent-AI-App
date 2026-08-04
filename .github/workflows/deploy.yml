@@ -115,7 +115,7 @@ jobs:
           aws ecs update-service \
           --cluster ${{ secrets.ECS_CLUSTER }} \
           --service ${{ secrets.GATEWAY_SERVICE }} \
-          --force-new-deployment
+          --force-new-deployment \
           --region ${{ env.AWS_REGION }}
 
       - name: Deploy auth
