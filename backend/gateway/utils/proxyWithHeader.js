@@ -1,6 +1,7 @@
 import proxy from "express-http-proxy"
 
 export const proxyWithHeader=(serviceUrl)=>{
+    console.log("🔥 Gateway proxy timeout = 60000ms")
     
     return proxy(serviceUrl,{
         timeout: 60000,
