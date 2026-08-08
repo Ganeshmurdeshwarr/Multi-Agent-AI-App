@@ -101,7 +101,7 @@ ${state.prompt}
 
 `;
 
-await deductCredits(state.userId, "coding");
+      await deductCredits(state.userId, "coding");
       const res = await llm.invoke(prompt);
 
       const raw = res.content.trim();
@@ -122,7 +122,6 @@ await deductCredits(state.userId, "coding");
       const jsonString = cleaned.slice(start, end + 1);
 
       const data = JSON.parse(jsonString);
-
 
       return {
         ...state,
@@ -169,9 +168,13 @@ await deductCredits(state.userId, "coding");
       artifacts: [],
     };
   } catch (error) {
+    console.error("🔥 CODING AGENT ERROR:", error);
+    console.error("🔥 ERROR MESSAGE:", error?.message);
+    console.error("🔥 ERROR STACK:", error?.stack);
+
     return {
       ...state,
-      aiResponse: error?.data?.message || "❌ Failed to generate code",
+      aiResponse: `❌ Failed to generate code: ${error?.message || "Unknown error"}`,
       artifacts: [],
     };
   }
