@@ -120,15 +120,11 @@ ${state.prompt}
       }
 
       const jsonString = cleaned.slice(start, end + 1);
-
-      console.log("🔥 RAW CODING RESPONSE:");
-console.log(raw);
-
-console.log("🔥 CLEANED RESPONSE:");
-console.log(cleaned);
-
-console.log("🔥 JSON STRING:");
-console.log(jsonString);
+console.log("🔥 RAW LENGTH:", raw.length);
+console.log("🔥 AROUND ERROR:");
+console.log(raw.slice(10500, 10900));
+console.log("🔥 LAST 500:");
+console.log(raw.slice(-500));
 
       const data = JSON.parse(jsonString);
 
