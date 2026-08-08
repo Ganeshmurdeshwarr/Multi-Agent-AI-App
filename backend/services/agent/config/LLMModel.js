@@ -15,7 +15,7 @@ const gemini = new ChatGoogleGenerativeAI({
 
 
 const openRouter = new ChatOpenRouter({
-  model: "meta-llama/llama-3.3-70b-instruct:free",
+  model: "poolside/laguna-s-2.1:free",
   temperature:0,
   maxTokens:2500
   
