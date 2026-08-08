@@ -121,6 +121,15 @@ ${state.prompt}
 
       const jsonString = cleaned.slice(start, end + 1);
 
+      console.log("🔥 RAW CODING RESPONSE:");
+console.log(raw);
+
+console.log("🔥 CLEANED RESPONSE:");
+console.log(cleaned);
+
+console.log("🔥 JSON STRING:");
+console.log(jsonString);
+
       const data = JSON.parse(jsonString);
 
       return {
