@@ -15,9 +15,9 @@ const gemini = new ChatGoogleGenerativeAI({
 
 
 const openRouter = new ChatOpenRouter({
-  model: "poolside/laguna-s-2.1:free",
+  model: "deepseek/deepseek-chat",
   temperature:0,
-  maxTokens:2500
+  maxTokens:2000
   
   
 });
@@ -31,7 +31,7 @@ export const getModel = async(agent)=>{
     case "search":
         return groq;
     case "coding":
-        return gemini;
+        return openRouter;
     case "imageAnalyzer":
         return gemini;
     default:
