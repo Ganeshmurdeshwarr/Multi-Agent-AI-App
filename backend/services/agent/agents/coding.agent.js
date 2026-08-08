@@ -65,6 +65,16 @@ Never use placeholders.
 
 Return ONLY valid JSON:
 
+CRITICAL JSON RULES:
+
+- The response MUST be valid JSON.parse() compatible JSON.
+- Escape every double quote inside file content as \"
+- Escape every backslash correctly.
+- Escape newlines as \n when required.
+- Never use unescaped double quotes inside a JSON string.
+- Do NOT add trailing commas.
+- Do NOT put markdown fences around the JSON.
+
 Schema:
 
 {
@@ -81,7 +91,7 @@ Schema:
     {
       "name":"script.js",
       "content":"...
-    },
+    }
 
   ]
 }
@@ -101,7 +111,6 @@ ${state.prompt}
 
 `;
 
-      await deductCredits(state.userId, "coding");
       const res = await llm.invoke(prompt);
 
       const raw = res.content.trim();
@@ -120,26 +129,51 @@ ${state.prompt}
       }
 
       const jsonString = cleaned.slice(start, end + 1);
-console.log("🔥 RAW LENGTH:", raw.length);
-console.log("🔥 AROUND ERROR:");
-console.log(raw.slice(10500, 10900));
-console.log("🔥 LAST 500:");
-console.log(raw.slice(-500));
 
-      const data = JSON.parse(jsonString);
+      let data;
 
-      return {
-        ...state,
-        aiResponse: "Code Generated Successfully",
-        artifacts: [
-          {
-            id: Date.now(),
-            type: "Project",
-            files: data.files || [],
-            title: state.prompt,
-          },
-        ],
-      };
+      try {
+   data = JSON.parse(jsonString);
+
+  return {
+    ...state,
+    aiResponse: "Code Generated Successfully",
+    artifacts: [
+      {
+        id: Date.now(),
+        type: "Project",
+        files: data.files || [],
+        title: state.prompt,
+      },
+    ],
+  };
+
+} catch (error) {
+
+  console.error("🔥 JSON PARSE FAILED");
+  console.error("🔥 ERROR:", error.message);
+
+  const match = error.message.match(/position (\d+)/);
+
+  if (match) {
+    const position = Number(match[1]);
+
+    console.error("🔥 ERROR POSITION:", position);
+
+    console.error(
+      "🔥 BEFORE:",
+      jsonString.slice(Math.max(0, position - 500), position)
+    );
+
+    console.error(
+      "🔥 AFTER:",
+      jsonString.slice(position, position + 500)
+    );
+  }
+
+  throw error;
+}
+     
     }
 
     const res = await llm.invoke(`
